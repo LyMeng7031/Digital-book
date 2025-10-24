@@ -1,107 +1,79 @@
+import { UserModel } from "../models/User";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import Jwt from "jsonwebtoken";
-import { UserModel } from "../models/User";
-
-// 🧩 Register Service
-export const registerService = async (req: Request, res: Response) => {
-  const { firstName, lastName, userName, email, password, phone, age } =
+export const Registerservice = async (req: Request, res: Response) => {
+  const { email, password, firstName, lastName, userName, phone, age } =
     req.body;
-
   try {
-    // Check if user exists
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email already exists" });
+    const existEmail = await UserModel.findOne({ email });
+    if (existEmail) {
+      return res.status(400).json({ message: "Email already exists" });
     }
-
-    // Hash password
+    const existUserName = await UserModel.findOne({ userName });
+    if (existUserName) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    //hash password before saving to database (omitted for brevity)
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
+    //create new user
     const newUser = new UserModel({
       firstName,
       lastName,
       userName,
+      age,
+      phone,
       email,
       password: hashedPassword,
-      phone,
-      age,
+      // role: "Customer",
     });
-
+    //save user to database
     await newUser.save();
-
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      user: {
-        id: newUser._id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        userName: newUser.userName,
-        email: newUser.email,
-      },
-    });
+    res.status(201).json({ message: "User registered successfully", newUser });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Registration failed due to server error",
-    });
+    console.error("Error in register service:", error);
   }
 };
 
-// 🔐 Login Service
-export const loginService = async (req: Request, res: Response) => {
+export const Loginservice = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-
   try {
-    // Find user
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+    const existUser = await UserModel.findOne({ email });
+    if (!existUser) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
-
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid password" });
-    }
-
-    // Generate JWT token
-    const token = Jwt.sign(
-      { id: user._id, email: user.email },
-      "SECRET_KEY", // in real app use process.env.JWT_SECRET
-      { expiresIn: "1d" }
+    //compare password
+    const isMatch = await bcrypt.compare(
+      password,
+      existUser.password as string
     );
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userName: user.userName,
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    //generate JWT token (omitted for brevity)
+    const token = Jwt.sign(
+      {
+        id: existUser._id,
+        role: existUser.role,
+        email: existUser.email,
+        userName: existUser.userName,
       },
-    });
+      process.env.JWT_SECRET || "SECRET_KEY",
+      {}
+    ); // update JWT Token Generation over here then we have to Create Role Middleware go to Create src/middlewares/roleMiddleware.ts
+
+    return res.status(200).json({ message: "Login successful", token });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Login failed due to server error",
-    });
+    console.error("Error in login service:", error);
+  }
+};
+
+export const logoutservice = async (req: Request, res: Response) => {
+  try {
+    // Invalidate the token on the client side by instructing the client to delete it.
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Error in logout service:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

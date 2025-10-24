@@ -1,10 +1,16 @@
 import { Request, Response } from "express";
-import { registerService, loginService } from "../services/authService";
-
+import { Registerservice } from "../services/authService";
+import { Loginservice } from "../services/authService";
+import { logoutservice } from "../services/authService";
 export const registerController = async (req: Request, res: Response) => {
-  await registerService(req, res);
+  const result = await Registerservice(req, res);
+  return result;
 };
-
 export const loginController = async (req: Request, res: Response) => {
-  await loginService(req, res);
+  const result = await Loginservice(req, res);
+  return result;
+};
+export const logoutController = async (req: Request, res: Response) => {
+  const result = await logoutservice(req, res);
+  return result;
 };

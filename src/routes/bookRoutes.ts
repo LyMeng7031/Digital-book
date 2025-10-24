@@ -7,7 +7,7 @@ import { updateBook } from "@/controllers/bookController";
 const router = express.Router();
 
 router.post("/create-book", createBook);
-router.get("/all-books", getAllBooks);
+router.get("/", getAllBooks);
 router.get("/:id", getBookById);
 router.delete("/delete-book/:id", deleteBook);
 router.get("/author/:author", getBooksByAuthorController);

@@ -1,26 +1,17 @@
 import express from "express";
-import dotenv from "dotenv";
-import connectDB from "./config/database"; // your custom DB connection
-import Router from "@/routes/index"; // your main router (combined routes)
-import authRoutes from "./routes/authRoutes"; // add auth routes
-
-dotenv.config();
-
+import connectDB from "./config/database";
+import Router from "@/routes/index";
 const app = express();
-
-// Enable JSON and URL-encoded body parsing
+//Enable json parsing body
 app.use(express.json());
+
+//Enable URL-encoded parsing body parsing with extended mode
+//`extended : true` allow rich objects and arrays vai query string library
 app.use(express.urlencoded({ extended: true }));
-
-// ✅ Connect to MongoDB
+app.use("/api/v1", Router);
 connectDB();
-
-// ✅ Routes
-app.use("/api/v1", Router); // your main routes
-app.use("/api/v1/auth", authRoutes); // auth register & login routes
-
-// ✅ Server Start
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+app.listen(6000, () => {
+  console.log(`server run on port 6000`);
 });
+
+export default app;
