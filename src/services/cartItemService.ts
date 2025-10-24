@@ -18,3 +18,16 @@ export const updateCartItemQuantity = async (
   await item.save();
   return item;
 };
+export const updateCartItemService = async (id: string, quantity: number) => {
+  const updatedItem = await CartItemModel.findByIdAndUpdate(
+    id,
+    { quantity },
+    { new: true }
+  );
+  return updatedItem;
+};
+
+export const deleteCartItemService = async (id: string) => {
+  const deleted = await CartItemModel.findByIdAndDelete(id);
+  return deleted;
+};
