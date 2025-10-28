@@ -23,3 +23,7 @@ export const updateOrderStatus = async (
   await order.save();
   return order;
 };
+export const deleteOrder = async (orderId: string) => {
+  const order = await OrderModel.findByIdAndDelete(orderId);
+  return order;
+};

@@ -3,6 +3,7 @@ import {
   createOrder,
   getOrdersByUser,
   updateOrderStatus,
+  deleteOrder,
 } from "../services/orderService";
 
 export const createOrderController = async (req: Request, res: Response) => {
@@ -38,5 +39,15 @@ export const updateOrderStatusController = async (
     res.status(200).json(order);
   } catch (error) {
     res.status(500).json({ message: "Error updating order", error });
+  }
+};
+
+export const deleteOrderController = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    await deleteOrder(orderId);
+    res.status(200).json({ message: "Order deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting order", error });
   }
 };
